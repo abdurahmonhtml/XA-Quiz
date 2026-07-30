@@ -8,6 +8,8 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 const AuthContext = createContext();
 
@@ -23,6 +25,15 @@ export function AuthProvider({ children }) {
   async function register(email, password, displayName) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName });
+
+    // Firestore ga foydalanuvchi yozish
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email: cred.user.email,
+      displayName: displayName,
+      role: 'user',
+      createdAt: serverTimestamp(),
+    });
+
     return cred;
   }
 
@@ -30,10 +41,18 @@ export function AuthProvider({ children }) {
     return signInWithEmailAndPassword(auth, email, password);
   }
 
-  // Mehmon sifatida kirish — parolsiz
   async function loginAsGuest() {
     const cred = await signInAnonymously(auth);
     await updateProfile(cred.user, { displayName: 'Mehmon' });
+
+    // Firestore ga mehmon yozish
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email: 'mehmon',
+      displayName: 'Mehmon',
+      role: 'user',
+      createdAt: serverTimestamp(),
+    }, { merge: true });
+
     return cred;
   }
 
