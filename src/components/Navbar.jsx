@@ -13,7 +13,6 @@ export default function Navbar() {
   const location = useLocation();
   const [photoURL, setPhotoURL] = useState('');
 
-  // Foydalanuvchi rasmini yuklash
   useEffect(() => {
     if (!currentUser) return;
     const unsub = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
@@ -22,7 +21,7 @@ export default function Navbar() {
       } else {
         setPhotoURL('');
       }
-    });
+    }, () => setPhotoURL(''));
     return () => unsub();
   }, [currentUser]);
 
@@ -47,13 +46,11 @@ export default function Navbar() {
   return (
     <nav style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(30,41,59,0.6)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(51,65,85,0.5)', padding: '0 16px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64, flexWrap: 'wrap', gap: 8 }}>
-        {/* Logo */}
         <Link to="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: '#f1f5f9' }}>
           <div style={{ width: 36, height: 36, background: '#10b981', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🏆</div>
           <span style={{ fontFamily: fonts.display, fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px' }}>Quiz<span style={{ color: '#34d399' }}>App</span></span>
         </Link>
 
-        {/* Linklar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
           {links.map((l) => {
             const isAdminLink = l.to === '/admin';
@@ -75,7 +72,6 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Profil va chiqish */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => navigate('/profile')} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 4px 4px',
@@ -84,9 +80,8 @@ export default function Navbar() {
             cursor: 'pointer', transition: 'all 0.2s ease'
           }}>
             {photoURL ? (
-              <img src={photoURL} alt="Avatar" style={{
-                width: 32, height: 32, borderRadius: '50%', objectFit: 'cover'
-              }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+              <img src={photoURL} alt="Avatar" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                onError={(e) => { e.target.style.display = 'none'; }} />
             ) : null}
             <div style={{
               width: 32, height: 32, borderRadius: '50%', display: photoURL ? 'none' : 'flex',

@@ -9,7 +9,6 @@ export default function Leaderboard({ showDifficulty = null }) {
   const { results, loading } = useLeaderboard({ difficulty: filter === 'all' ? null : filter, limitCount: 20 });
   const [userPhotos, setUserPhotos] = useState({});
 
-  // Foydalanuvchi rasmlarini yuklash
   useState(() => {
     async function loadPhotos() {
       try {
