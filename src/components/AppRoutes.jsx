@@ -7,6 +7,7 @@ import Dashboard from '../pages/Dashboard';
 import CreateTest from '../pages/CreateTest';
 import SolveTest from '../pages/SolveTest';
 import AdminPanel from '../pages/AdminPanel';
+import Profile from '../pages/Profile';
 
 export default function AppRoutes() {
   const { currentUser, loading } = useAuth();
@@ -30,6 +31,7 @@ export default function AppRoutes() {
       <Route path="/create" element={<ProtectedRoute><CreateTest /></ProtectedRoute>} />
       <Route path="/solve" element={<ProtectedRoute><SolveTest /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

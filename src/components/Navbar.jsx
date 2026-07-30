@@ -2,12 +2,29 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
 import { fonts } from '../utils/fonts';
+import { useState, useEffect } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
+  const [photoURL, setPhotoURL] = useState('');
+
+  // Foydalanuvchi rasmini yuklash
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsub = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
+      if (snap.exists() && snap.data().photoURL) {
+        setPhotoURL(snap.data().photoURL);
+      } else {
+        setPhotoURL('');
+      }
+    });
+    return () => unsub();
+  }, [currentUser]);
 
   async function handleLogout() {
     try { await logout(); navigate('/login'); } catch (err) { console.error(err); }
@@ -21,9 +38,8 @@ export default function Navbar() {
     { to: '/solve', label: 'Test Yechish', emoji: '🧠' },
   ];
 
-  // Admin panel linki faqat adminlarga
   if (isAdmin) {
-    links.push({ to: '/admin', label: 'Admin Panel', emoji: '👑' });
+    links.push({ to: '/admin', label: 'Admin', emoji: '👑' });
   }
 
   if (!currentUser) return null;
@@ -44,7 +60,6 @@ export default function Navbar() {
             const activeColor = isAdminLink ? '#ef4444' : '#10b981';
             const activeBg = isAdminLink ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)';
             const activeBorder = isAdminLink ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)';
-
             return (
               <Link key={l.to} to={l.to} style={{
                 display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10,
@@ -60,26 +75,31 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Foydalanuvchi */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Profil va chiqish */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => navigate('/profile')} style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 4px 4px',
+            borderRadius: 50, background: isActive('/profile') ? 'rgba(16,185,129,0.1)' : 'rgba(30,41,59,0.5)',
+            border: isActive('/profile') ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(51,65,85,0.3)',
+            cursor: 'pointer', transition: 'all 0.2s ease'
+          }}>
+            {photoURL ? (
+              <img src={photoURL} alt="Avatar" style={{
+                width: 32, height: 32, borderRadius: '50%', objectFit: 'cover'
+              }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+            ) : null}
             <div style={{
-              width: 32, height: 32, background: 'rgba(16,185,129,0.1)', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '1px solid rgba(16,185,129,0.3)', fontSize: 14, fontWeight: 700,
-              color: '#10b981', fontFamily: fonts.display
+              width: 32, height: 32, borderRadius: '50%', display: photoURL ? 'none' : 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)',
+              fontSize: 14, fontWeight: 700, color: '#10b981', fontFamily: fonts.display
             }}>
               {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
             </div>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#cbd5e1', fontFamily: fonts.display }}>
-                {currentUser.displayName || 'Foydalanuvchi'}
-              </p>
-              <p style={{ fontSize: 12, color: '#475569', fontFamily: fonts.body }}>
-                {currentUser.email}
-              </p>
-            </div>
-          </div>
+            <span style={{ color: '#cbd5e1', fontSize: 13, fontWeight: 600, fontFamily: fonts.display }}>
+              {currentUser.displayName || 'Profil'}
+            </span>
+          </button>
           <button onClick={handleLogout} style={{ padding: 8, borderRadius: 8, color: '#64748b', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }} title="Chiqish">🚪</button>
         </div>
       </div>
